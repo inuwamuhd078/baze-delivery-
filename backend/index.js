@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { 
     default: makeWASocket, 
     useMultiFileAuthState, 
@@ -15,6 +16,7 @@ const pino = require('pino');
 
 dotenv.config();
 
+$sessionModel
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -41,6 +43,17 @@ const redisClient = {
 };
 
 async function connectToWhatsApp() {
+    // Persistent Session Logic
+    if (!fs.existsSync('auth_info_baileys')) {
+        fs.mkdirSync('auth_info_baileys');
+    }
+    
+    const savedSession = await Session.findOne({ id: 'whatsapp_session' });
+    if (savedSession) {
+        fs.writeFileSync('auth_info_baileys/creds.json', savedSession.data);
+        console.log('Restored WhatsApp session from MongoDB');
+    }
+
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
     const { version } = await fetchLatestBaileysVersion();
 
@@ -178,6 +191,8 @@ const PORT = process.env.PORT || 3001;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is listening on port ${PORT}`);
 });
+
+
 
 
 
