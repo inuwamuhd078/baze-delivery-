@@ -51,7 +51,21 @@ async function connectToWhatsApp() {
         logger: pino({ level: 'silent' })
     });
 
-    sock.ev.on('creds.update', saveCreds); if(!sock.authState.creds.registered) { const phoneNumber = "2348052587667"; setTimeout(async () => { const code = await sock.requestPairingCode(phoneNumber); console.log("========================================"); console.log("YOUR PAIRING CODE: " + code); console.log("========================================"); }, 3000); }
+        sock.ev.on('creds.update', saveCreds);
+
+    if (!sock.authState.creds.registered) {
+        const phoneNumber = "2348052587667";
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(phoneNumber);
+                console.log("========================================");
+                console.log("YOUR PAIRING CODE: " + code);
+                console.log("========================================");
+            } catch (err) {
+                console.log("Error requesting pairing code: ", err.message);
+            }
+        }, 10000); // Increased to 10 seconds for stability
+    } if(!sock.authState.creds.registered) { const phoneNumber = "2348052587667"; setTimeout(async () => { const code = await sock.requestPairingCode(phoneNumber); console.log("========================================"); console.log("YOUR PAIRING CODE: " + code); console.log("========================================"); }, 3000); }
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
@@ -164,6 +178,7 @@ const PORT = process.env.PORT || 3001;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is listening on port ${PORT}`);
 });
+
 
 
 
